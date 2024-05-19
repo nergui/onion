@@ -24,21 +24,10 @@ async function main() {
         // Handling the stream
         response.data.on('data', (chunk) => {
             const chunkString = chunk.toString();
-            const lines = chunkString.split('\n');
-            for (let line of lines) {
-                if (line.trim() !== '') {
-                    if (line.startsWith('data: ')) {
-                        line = line.slice(6); // Remove the 'data: ' prefix
-                    }
-                    try {
-                        const parsedChunk = JSON.parse(line);
-                        if (parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta) {
-                            process.stdout.write(parsedChunk.choices[0].delta.content || "");
-                        }
-                    } catch (error) {
-                        console.error('Failed to parse line:', line);
-                    }
-                }
+            console.log('Received chunk:', chunkString);
+            const parsedChunk = JSON.parse(chunkString);
+            if (parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta) {
+                process.stdout.write(parsedChunk.choices[0].delta.content || "");
             }
         });
 
