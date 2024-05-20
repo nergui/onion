@@ -14,9 +14,6 @@ app.use('/users', userRoutes); // Use routes
 app.post('/openai', (req, res) => {
   
   const { model, prompt } = req.body;
-  console.log("Requested model:", model);  // Check the model being requested
-  console.log("Available models:", models.openAI);  // See what's in your models object
-
   if (!models.openAI || !models.openAI[model]) {
     return res.status(400).json({ error: 'Invalid model specified' });
   }  
