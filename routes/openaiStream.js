@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function streamOpenAI(prompt, res) {
+async function streamOpenAI(model, prompt, res) {
     const config = {
         method: 'post',
         url: 'https://api.openai.com/v1/chat/completions',
@@ -9,7 +9,7 @@ async function streamOpenAI(prompt, res) {
             'Content-Type': 'application/json',
         },
         data: {
-            model: "gpt-4",
+            model: model,
             messages: [{ role: "user", content: prompt }],
             stream: true,
         },
