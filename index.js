@@ -5,13 +5,20 @@ const { db } = require('./firebase'); // Import the db instance
 const app = express();
 const port = 80;
 const userRoutes = require('./routes/user'); // Import routes
-const { streamOpenAI } = require('./routes/openaiStream'); // Import the streaming module
-const models = require('./models'); // Import the models list
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // Update to match the domain you will make the request from
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  next();
+});
 
 app.use(bodyParser.json());
 app.use('/users', userRoutes); // Use routes
 app.use(express.json()); // Middleware to parse JSON bodies
 
+const { streamOpenAI } = require('./routes/openaiStream'); // Import the streaming module
+const models = require('./models'); // Import the models list
 // Route to interact with OpenAI using streaming
 app.post('/openai',verifyToken, (req, res) => {
   
