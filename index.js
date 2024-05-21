@@ -3,15 +3,14 @@ const bodyParser = require('body-parser');
 const verifyToken = require('./middleware/authMiddleware'); // Adjust path as necessary
 const { db } = require('./firebase'); // Import the db instance
 const app = express();
-const port = 80;
-const userRoutes = require('./routes/user'); // Import routes
-
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*'); // Update to match the domain you will make the request from
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   next();
 });
+const port = 80;
+const userRoutes = require('./routes/user'); // Import routes
 
 app.use(bodyParser.json());
 app.use('/users', userRoutes); // Use routes
