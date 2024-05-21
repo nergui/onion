@@ -9,8 +9,8 @@ const models = {
     "azure-curie": "latest"
   },
   "googleAI": {
-    "google-bert": "latest",
-    "google-t5": "latest"
+    "gemini-1.0-pro-002": "latest",
+    "gemini-pro": "latest"
   },
   "anthropic": {
     "claude": "latest"
