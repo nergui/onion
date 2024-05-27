@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const verifyToken = require('./middleware/authMiddleware'); // Adjust path as necessary
-const generateFromTextInput = require('./gemini'); // Adjust path as necessary
+const createStreamChat = require('./gemini'); // Adjust path as necessary
 const { db } = require('./firebase'); // Import the db instance
 const app = express();
 app.use((req, res, next) => {
@@ -32,13 +32,11 @@ app.post('/openai',verifyToken, (req, res) => {
 
 
 app.post('/gemini', (req, res) => {
-  const { model, prompt } = req.body; // Assume these are sent in the request body
-
+  const { model, prompt } = req.body;
   if (!model || !prompt) {
-      return res.status(400).json({ error: "Model ID and prompt are required" });
+      return res.status(400).send('Model and prompt are required.');
   }
-
-  generateFromTextInput(model, prompt, res);
+  createStreamChat(model, prompt, res);
 });
 
 // Route to get the list of models
