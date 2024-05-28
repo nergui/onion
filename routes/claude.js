@@ -8,13 +8,15 @@ const Anthropic = require('@anthropic-ai/sdk');
  * @param {Object} res - The Express response object to send responses back to the client.
  */
 async function createClaudeStreamChat(model, prompt, res) {
+  const selectedModel = model || 'claude-3-opus-20240229'
+  console.log("Using model:" + selectedModel);
   const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY  // Use the API key from environment variables
   });
 
   try {
     const msg = await anthropic.messages.create({
-      model: model,
+      model: selectedModel,
       max_tokens: 1024,
       messages: [{ role: "user", content: prompt }]
     });
@@ -23,7 +25,7 @@ async function createClaudeStreamChat(model, prompt, res) {
     if (msg && msg.content && Array.isArray(msg.content)) {
       msg.content.forEach(part => {
         if (part.type === 'text') {
-          console.log(part.text);  // Log the text content
+          console.log("Cloude:" + part.text);  // Log the text content
           res.write(part.text);    // Send text content back to the client
         }
       });

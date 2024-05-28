@@ -1,6 +1,8 @@
 const axios = require('axios');
 
 async function createOpenAIStreamChat(model, prompt, res) {
+    const selectedModel = model || 'gpt-4o'
+    console.log("Using model:" + selectedModel);
     const config = {
         method: 'post',
         url: 'https://api.openai.com/v1/chat/completions',
@@ -9,7 +11,7 @@ async function createOpenAIStreamChat(model, prompt, res) {
             'Content-Type': 'application/json',
         },
         data: {
-            model: model,
+            model: selectedModel,
             messages: [{ role: "user", content: prompt }],
             stream: true,
         },
@@ -37,6 +39,7 @@ async function createOpenAIStreamChat(model, prompt, res) {
                     try {
                         const parsedChunk = JSON.parse(completeMessage);
                         if (parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta) {
+                            console.log("OpenAI:" + parsedChunk.choices[0].delta.content || "")
                             res.write(parsedChunk.choices[0].delta.content || "");
                         }
                     } catch (error) {

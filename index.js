@@ -26,17 +26,18 @@ const models = require('./models'); // Import the models list
 app.post('/openai',verifyToken, (req, res) => {
   
   const { model, prompt } = req.body;
-  if (!models.openAI || !models.openAI[model]) {
-    return res.status(400).json({ error: 'Invalid model specified' });
-  }  
+
+  if (!prompt) {
+    return res.status(400).send('prompt is required.');
+  }
   res.setHeader('Content-Type', 'text/plain');
   createOpenAIStreamChat(model, prompt, res);
 });
 
 app.post('/claude', (req, res) => {
   const { model, prompt } = req.body;
-  if (!model || !prompt) {
-    return res.status(400).send('Model and prompt are required.');
+  if (!prompt) {
+    return res.status(400).send('prompt is required.');
   }
   console.log(createClaudeStreamChat)
   createClaudeStreamChat(model, prompt, res);
@@ -45,8 +46,8 @@ app.post('/claude', (req, res) => {
 
 app.post('/gemini', (req, res) => {
   const { model, prompt } = req.body;
-  if (!model || !prompt) {
-      return res.status(400).send('Model and prompt are required.');
+  if (!prompt) {
+      return res.status(400).send('prompt is required.');
   }
   createGeminiStreamChat(model, prompt, res);
 });

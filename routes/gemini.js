@@ -13,18 +13,18 @@ async function createGeminiStreamChat(model, prompt, res) {
 
     // Initialize Vertex AI with your Cloud project and location
     const vertexAI = new VertexAI({ project: projectId, location: location });
-
+    const selectedModel = model || 'gemini-1.0-pro-002'
+    console.log("Using model:" + selectedModel);
     // Instantiate the model
-    const generativeModel = vertexAI.getGenerativeModel({ model: model });
+    const generativeModel = vertexAI.getGenerativeModel({ model: selectedModel });
 
-    console.log(`User: ${prompt}`);
 
     try {
         const chat = generativeModel.startChat({}); // Assuming startChat exists and works as described
         const result1 = await chat.sendMessageStream(prompt);
         for await (const item of result1.stream) {
             // Assuming the stream provides data as expected
-            console.log(item.candidates[0].content.parts[0].text);
+            console.log("Gemini: " + item.candidates[0].content.parts[0].text);
             res.write(item.candidates[0].content.parts[0].text);
         }
         res.end();  // Close the response stream after all messages are sent

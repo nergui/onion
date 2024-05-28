@@ -13,7 +13,8 @@ const models = {
     "gemini-pro": "latest"
   },
   "anthropic": {
-    "claude": "latest"
+    "claude": "latest",
+    "latest":"gemini-1.0-pro-002"
   },
   "scaleAI": {
     "gemini": "latest"
