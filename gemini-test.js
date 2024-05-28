@@ -2,7 +2,7 @@ const {VertexAI} = require('@google-cloud/vertexai');
 
 
 
-console.log("hello world");
+
 /**
  * TODO(developer): Update these variables before running the sample.
  */

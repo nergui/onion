@@ -1,11 +1,11 @@
 const axios = require('axios');
 
-async function streamOpenAI(model, prompt, res) {
+async function createOpenAIStreamChat(model, prompt, res) {
     const config = {
         method: 'post',
         url: 'https://api.openai.com/v1/chat/completions',
         headers: {
-            'Authorization': `Bearer sk-onion-VZ6jTvi6JvDzv1eFogPPT3BlbkFJppfHJQWYtJbk7K269QPO`,
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
         },
         data: {
@@ -58,4 +58,4 @@ async function streamOpenAI(model, prompt, res) {
     }
 }
 
-module.exports = { streamOpenAI };
+module.exports = { createOpenAIStreamChat };

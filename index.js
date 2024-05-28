@@ -1,7 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const verifyToken = require('./middleware/authMiddleware'); // Adjust path as necessary
-const createStreamChat = require('./gemini'); // Adjust path as necessary
+const verifyToken = require('./middleware/authMiddleware'); 
+
+const createGeminiStreamChat = require('./routes/gemini'); 
+const { createOpenAIStreamChat } = require('./routes/openaiStream'); 
+const createClaudeStreamChat = require('./routes/claude');
+
 const { db } = require('./firebase'); // Import the db instance
 const app = express();
 app.use((req, res, next) => {
@@ -17,7 +21,6 @@ app.use(bodyParser.json());
 app.use('/users', userRoutes); // Use routes
 app.use(express.json()); // Middleware to parse JSON bodies
 
-const { streamOpenAI } = require('./routes/openaiStream'); // Import the streaming module
 const models = require('./models'); // Import the models list
 // Route to interact with OpenAI using streaming
 app.post('/openai',verifyToken, (req, res) => {
@@ -27,7 +30,16 @@ app.post('/openai',verifyToken, (req, res) => {
     return res.status(400).json({ error: 'Invalid model specified' });
   }  
   res.setHeader('Content-Type', 'text/plain');
-  streamOpenAI(model, prompt, res);
+  createOpenAIStreamChat(model, prompt, res);
+});
+
+app.post('/claude', (req, res) => {
+  const { model, prompt } = req.body;
+  if (!model || !prompt) {
+    return res.status(400).send('Model and prompt are required.');
+  }
+  console.log(createClaudeStreamChat)
+  createClaudeStreamChat(model, prompt, res);
 });
 
 
@@ -36,7 +48,7 @@ app.post('/gemini', (req, res) => {
   if (!model || !prompt) {
       return res.status(400).send('Model and prompt are required.');
   }
-  createStreamChat(model, prompt, res);
+  createGeminiStreamChat(model, prompt, res);
 });
 
 // Route to get the list of models
