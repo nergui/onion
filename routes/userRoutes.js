@@ -2,11 +2,20 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../firebase'); // Import the db instance
 
-// Create a new user
+// Create a new user without needing an ID from the client
 router.post('/', async (req, res) => {
   try {
-    const data = req.body;
-    const response = await db.collection('users').add(data);
+    let data = req.body;
+    // Ensure dob is a valid date or remove if not using
+    // data.dob = new Date(data.dob);
+
+    // Automatically generate an ID for the new user
+    const response = await db.collection('users').add({
+      firstname: data.firstname,
+      lastname: data.lastname,
+      // dob: data.dob, // Uncomment if using date of birth
+      running_balance: data.running_balance
+    });
     res.status(200).send(`User added with ID: ${response.id}`);
   } catch (error) {
     res.status(500).send('Error adding user: ' + error.message);
@@ -62,6 +71,28 @@ router.delete('/:id', async (req, res) => {
     res.status(200).send('User deleted');
   } catch (error) {
     res.status(500).send('Error deleting user: ' + error.message);
+  }
+});
+
+// Endpoint to update user balance
+router.put('/update-balance/:id', async (req, res) => {
+  const { balanceChange } = req.body;
+  try {
+    const userRef = db.collection('users').doc(req.params.id);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      return res.status(404).send('User not found');
+    }
+
+    // Calculate new balance
+    const userData = doc.data();
+    const newBalance = (userData.running_balance || 0) + balanceChange;
+
+    // Update the balance
+    await userRef.update({ running_balance: newBalance });
+    res.status(200).send(`User balance updated to ${newBalance}`);
+  } catch (error) {
+    res.status(500).send('Error updating user balance: ' + error.message);
   }
 });
 

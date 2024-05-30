@@ -1,14 +1,19 @@
 const express = require('express');
+const app = express();
+app.use(express.json()); // Middleware to parse JSON bodies
 const bodyParser = require('body-parser');
+const { admin, db } = require('./firebase'); // Import the db instance
 const verifyToken = require('./middleware/authMiddleware'); 
 const { getAuthToken, createInvoice, checkInvoice } = require('./middleware/qpayHelpers'); // Assuming qpayHelpers contains the getAuthToken and createInvoice functions
-
+const serviceRouter = require('./routes/serviceRouter'); // assuming your file is named serviceRouter.js
 const createGeminiStreamChat = require('./routes/gemini'); 
 const { createOpenAIStreamChat } = require('./routes/openaiStream'); 
 const createClaudeStreamChat = require('./routes/claude');
+const userRoutes = require('./routes/userRoutes'); // Import routes
+app.use('/users', userRoutes); // Use routes
+app.use('/api/service', serviceRouter);
 
-const { db } = require('./firebase'); // Import the db instance
-const app = express();
+app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*'); // Update to match the domain you will make the request from
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -16,11 +21,9 @@ app.use((req, res, next) => {
   next();
 });
 const port = 80;
-const userRoutes = require('./routes/user'); // Import routes
 
-app.use(bodyParser.json());
-app.use('/users', userRoutes); // Use routes
-app.use(express.json()); // Middleware to parse JSON bodies
+const RELOAD_AMOUNT = 2000;  // Example amount
+
 
 const models = require('./models'); // Import the models list
 // Route to interact with OpenAI using streaming
@@ -87,7 +90,7 @@ app.post('/processQpayPayment', async (req, res) => {
 
 app.post('/checkInvoice', async (req, res) => {
   try {
-      const { invoiceId } = req.body;
+      const { invoiceId, userId } = req.body;  // Assuming userId is passed in request
       if (!invoiceId) {
           return res.status(400).send('Invoice ID is required.');
       }
@@ -97,14 +100,31 @@ app.post('/checkInvoice', async (req, res) => {
       const password = environment === 'PROD' ? process.env.QPAY_PROD_PASSWORD : process.env.QPAY_DEV_PASSWORD;
 
       const authToken = await getAuthToken(environment, username, password);
-
       const invoiceStatus = await checkInvoice(environment, authToken, invoiceId);
-      res.status(200).send({ success: true, invoiceStatus });
+
+      if (invoiceStatus !== "succeeded") {  // Check if the invoice check was successful
+          const userRef = db.collection('users').doc(userId);
+          const userDoc = await userRef.get();
+
+          if (!userDoc.exists) {
+              return res.status(404).send('User not found');
+          }
+
+          // Update the running balance
+          await userRef.update({
+              running_balance: admin.firestore.FieldValue.increment(RELOAD_AMOUNT)
+          });
+
+          res.status(200).send({ success: true, message: "Invoice processed and balance updated", newBalance: userDoc.data().running_balance + RELOAD_AMOUNT });
+      } else {
+          res.status(200).send({ success: true, invoiceStatus });
+      }
   } catch (error) {
       console.error('Error checking invoice:', error);
       res.status(500).send({ error: error.message });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
