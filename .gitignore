@@ -9,4 +9,3 @@ package-lock.json
 
 # Ignore log files
 *.log
-firebase.js
