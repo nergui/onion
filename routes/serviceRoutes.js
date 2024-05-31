@@ -1,33 +1,35 @@
 const express = require('express');
-const axios = require('axios');
-const User = require('../models/userModel');
-const Service = require('../models/serviceModel');
-const Transaction = require('../models/transactionModel');
-
 const router = express.Router();
+const axios = require('axios');
+const {fetchService} = require('../model/serviceModel');
+const { getUserById, updateUser } = require('../model/userModel'); // Adjust path as needed
+const { createTransaction } = require('../model/transactionModel'); // Adjust path as needed
 
-// Generic function to call external services
-async function callExternalService(serviceUrl, prompt) {
-    try {
-        const response = await axios.post(serviceUrl, { prompt });
-        return { success: true, data: response.data };
-    } catch (error) {
-        return { success: false, error: error.response ? error.response.data : error.message };
-    }
-}
 
-// Route to handle external service calls
+
+
+// Import service-specific functions
+const createGeminiStreamChat = require('./gemini'); 
+const { createOpenAIStreamChat } = require('./openaiStream'); 
+const createClaudeStreamChat = require('./claude');
+
+const serviceFunctions = {
+    gemini: createGeminiStreamChat,
+    openai: createOpenAIStreamChat,
+    claude: createClaudeStreamChat
+};
+
 router.post('/:serviceName', async (req, res) => {
-    const { userId, prompt } = req.body;
+    const { userId, prompt, model } = req.body;
     const serviceName = req.params.serviceName;
 
     try {
-        const service = await Service.findOne({ service_name: serviceName });
+        const service = await fetchService(serviceName);
         if (!service) {
             return res.status(404).send('Service not found');
         }
 
-        const user = await User.findById(userId);
+        const user = await getUserById(userId);
         if (!user) {
             return res.status(404).send('User not found');
         }
@@ -36,29 +38,32 @@ router.post('/:serviceName', async (req, res) => {
             return res.status(403).send('Insufficient funds');
         }
 
-        const serviceResponse = await callExternalService(`http://externalapi.com/${serviceName}`, prompt);
-        if (!serviceResponse.success) {
-            return res.status(500).send(serviceResponse.error);
+        // Call the specific service function dynamically
+        if (!serviceFunctions[serviceName]) {
+            return res.status(404).send('Service function not found');
         }
 
-        // Deduct fee from user's balance if the query is successful
-        user.running_balance -= service.fee_per_query;
-        await user.save();
+        // Stream response to the client
+        const serviceFunction = serviceFunctions[serviceName];
+        await serviceFunction(model, prompt, res, async (success) => {
+            if (success) {
+                // Update user balance and log the transaction only if streaming was successful
+                user.running_balance -= service.fee_per_query;
+                await updateUser(userId, { running_balance: user.running_balance });
 
-        // Log the transaction
-        const transaction = new Transaction({
-            service_id: service.id,
-            user_id: user.id,
-            current_datetime: new Date(),
-            fee_per_query: service.fee_per_query,
-            response: JSON.stringify(serviceResponse.data),
-            status: 'success'
+                await createTransaction({
+                    service_id: serviceName,
+                    user_id: userId,
+                    current_datetime: new Date(),
+                    fee_per_query: service.fee_per_query,
+                    status: 'success'
+                }); 
+            }
         });
-        await transaction.save();
 
-        res.send({ success: true, data: serviceResponse.data, balance: user.running_balance });
     } catch (error) {
-        res.status(500).send(error.message);
+        console.error('Error processing service request:', error);
+        res.status(500).send('Internal Server Error: ' + error.message);
     }
 });
 

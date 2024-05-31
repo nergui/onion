@@ -1,5 +1,4 @@
-const db = require('../config/firebaseConfig');
-
+const { db } = require('./firebase');
 const usersCollection = db.collection('users');
 
 const createUser = async (userData) => {

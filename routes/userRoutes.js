@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../firebase'); // Import the db instance
+const { db } = require('../model/firebase'); // Import the db instance
 
 // Create a new user without needing an ID from the client
 router.post('/', async (req, res) => {

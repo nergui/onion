@@ -1,22 +1,26 @@
-const db = require('../config/firebaseConfig');
+// transactionModel.js
+const { db } = require('./firebase');
 
 const transactionsCollection = db.collection('transactions');
 
 const createTransaction = async (transactionData) => {
-  const { id, service_id, current_datetime, fee_per_query, user_id, response, status } = transactionData;
-  await transactionsCollection.doc(id).set({
-    service_id,
-    current_datetime,
-    fee_per_query,
-    user_id,
-    response,
-    status
-  });
-};
+    if (!transactionData.user_id || typeof transactionData.user_id !== 'string') {
+        throw new Error("Invalid or missing 'user_id'");
+    }
+    if (!transactionData.service_id || typeof transactionData.service_id !== 'string') {
+        throw new Error("Invalid or missing 'service_id'");
+    }
 
-const getTransactionById = async (id) => {
-  const transactionDoc = await transactionsCollection.doc(id).get();
-  return transactionDoc.exists ? transactionDoc.data() : null;
-};
+    const newTransaction = {
+        service_id: transactionData.service_id,
+        user_id: transactionData.user_id,
+        current_datetime: transactionData.current_datetime || new Date(),
+        fee_per_query: transactionData.fee_per_query,
+        response: transactionData.response || "",  // Provide a default value like an empty string
+        status: transactionData.status
+    };
 
-module.exports = { createTransaction, getTransactionById };
+    const transactionRef = await transactionsCollection.add(newTransaction);
+    return transactionRef.id;
+};
+module.exports = { createTransaction };

@@ -1,4 +1,5 @@
-const db = require('../config/firebaseConfig');
+// serviceModel.js
+const { db } = require('./firebase');
 
 const servicesCollection = db.collection('services');
 
@@ -10,9 +11,9 @@ const createService = async (serviceData) => {
   });
 };
 
-const getServiceById = async (id) => {
+const fetchService = async (id) => {
   const serviceDoc = await servicesCollection.doc(id).get();
   return serviceDoc.exists ? serviceDoc.data() : null;
 };
 
-module.exports = { createService, getServiceById };
+module.exports = { createService, fetchService };

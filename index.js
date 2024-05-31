@@ -2,13 +2,10 @@ const express = require('express');
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
 const bodyParser = require('body-parser');
-const { admin, db } = require('./firebase'); // Import the db instance
+const { admin, db } = require('./model/firebase'); // Import the db instance
 const verifyToken = require('./middleware/authMiddleware'); 
 const { getAuthToken, createInvoice, checkInvoice } = require('./middleware/qpayHelpers'); // Assuming qpayHelpers contains the getAuthToken and createInvoice functions
-const serviceRouter = require('./routes/serviceRouter'); // assuming your file is named serviceRouter.js
-const createGeminiStreamChat = require('./routes/gemini'); 
-const { createOpenAIStreamChat } = require('./routes/openaiStream'); 
-const createClaudeStreamChat = require('./routes/claude');
+const serviceRouter = require('./routes/serviceRoutes'); // assuming your file is named serviceRouter.js
 const userRoutes = require('./routes/userRoutes'); // Import routes
 app.use('/users', userRoutes); // Use routes
 app.use('/api/service', serviceRouter);
@@ -26,35 +23,6 @@ const RELOAD_AMOUNT = 2000;  // Example amount
 
 
 const models = require('./models'); // Import the models list
-// Route to interact with OpenAI using streaming
-app.post('/openai',verifyToken, (req, res) => {
-  
-  const { model, prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).send('prompt is required.');
-  }
-  res.setHeader('Content-Type', 'text/plain');
-  createOpenAIStreamChat(model, prompt, res);
-});
-
-app.post('/claude', (req, res) => {
-  const { model, prompt } = req.body;
-  if (!prompt) {
-    return res.status(400).send('prompt is required.');
-  }
-  console.log(createClaudeStreamChat)
-  createClaudeStreamChat(model, prompt, res);
-});
-
-
-app.post('/gemini', (req, res) => {
-  const { model, prompt } = req.body;
-  if (!prompt) {
-      return res.status(400).send('prompt is required.');
-  }
-  createGeminiStreamChat(model, prompt, res);
-});
 
 // Route to get the list of models
 app.get('/models', (req, res) => {
