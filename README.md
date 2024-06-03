@@ -1,5 +1,8 @@
 example curls:
 
+URL: http://ec2-3-133-234-81.us-east-2.compute.amazonaws.com/
+
+
  curl -X POST http://localhost:80/openai -H "Content-Type: application/json" -d '{"model": "gpt-4", "prompt": "write me an essay about how to develop Mongolia"}'  -H "Authorization: Bearer your_token" 
 
 curl localhost:80/models -H "Authorization: Bearer token" 
@@ -43,16 +46,23 @@ curl -X POST  -H "Content-Type: application/json" -d '{"model": "gpt-4", "prompt
 
 
 
-curl -X POST  -H "Content-Type: application/json" -d '{"model": "gemini-1.0-pro-002", "prompt": "say hi"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/gemini
+curl -X POST  -H "Content-Type: application/json" -d '{"model": "gemini-1.0-pro-002", "prompt": "say hi"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/api/service/gemini
 
-curl -X POST  -H "Content-Type: application/json" -d '{"model": "claude-3-opus-20240229", "prompt": "say hi"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/claude
+curl -X POST http://localhost/api/service/claude \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" \
+-d '{
+    "userId": "nfClq5PitgsxY5ho7wNq",
+    "prompt": "Whatsup?",
+    "model": "claude-3-opus-20240229"
+}'
 
 
 
 curl -X POST  -H "Content-Type: application/json" -d '{"amount": "99"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/processQpayPayment
 
 
-curl -X POST http://localhost/checkInvoice \
+curl -X POST http://ec2-3-133-234-81.us-east-2.compute.amazonaws.com/checkInvoice \
 -H "Content-Type: application/json" \
 -d '{
     "invoiceId": "784c7c29-8026-42ac-909b-d5fe79919434",
