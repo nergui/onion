@@ -12,6 +12,9 @@ const createService = async (serviceData) => {
 };
 
 const fetchService = async (id) => {
+  if (!id) {
+    throw new Error('No service ID provided');
+}
   const serviceDoc = await servicesCollection.doc(id).get();
   return serviceDoc.exists ? serviceDoc.data() : null;
 };

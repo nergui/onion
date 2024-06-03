@@ -26,7 +26,7 @@ router.post('/:serviceName', async (req, res) => {
     try {
         const service = await fetchService(serviceName);
         if (!service) {
-            return res.status(404).send('Service not found');
+            return res.status(404).send('Service not found123');
         }
 
         const user = await getUserById(userId);
@@ -47,6 +47,7 @@ router.post('/:serviceName', async (req, res) => {
         const serviceFunction = serviceFunctions[serviceName];
         await serviceFunction(model, prompt, res, async (success) => {
             if (success) {
+                console.log(`Updating balance for user ${userId}. Deducting ${service.fee_per_query}.`);
                 // Update user balance and log the transaction only if streaming was successful
                 user.running_balance -= service.fee_per_query;
                 await updateUser(userId, { running_balance: user.running_balance });
@@ -58,6 +59,8 @@ router.post('/:serviceName', async (req, res) => {
                     fee_per_query: service.fee_per_query,
                     status: 'success'
                 }); 
+            }else {
+                console.log("Failed to complete the service, not updating balance user ${userId}");
             }
         });
 

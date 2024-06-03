@@ -7,7 +7,7 @@ const { VertexAI } = require('@google-cloud/vertexai');
  * @param {string} prompt - Input text from the user to start the chat.
  * @param {Object} res - The Express response object to send data back to the client.
  */
-async function createGeminiStreamChat(model, prompt, res) {
+async function createGeminiStreamChat(model, prompt, res, callback) {
     const projectId = 'onion-genimi';  // Your Google Cloud Project ID
     const location = 'us-central1';    // The location for the Vertex AI resources
 
@@ -28,9 +28,11 @@ async function createGeminiStreamChat(model, prompt, res) {
             res.write(item.candidates[0].content.parts[0].text);
         }
         res.end();  // Close the response stream after all messages are sent
+        callback(true)
     } catch (error) {
         console.error("Error during chat session:", error);
         res.status(500).send('Failed to generate content due to server error.');
+        callback(false)
     }
 }
 

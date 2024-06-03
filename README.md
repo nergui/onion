@@ -42,11 +42,18 @@ curl -X PUT http://localhost/users/update-balance/nfClq5PitgsxY5ho7wNq \
     "balanceChange": 50
 }'
 
-curl -X POST  -H "Content-Type: application/json" -d '{"model": "gpt-4", "prompt": "say hi"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/openai
+
+curl -X POST http://localhost/api/service/openai \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" \
+-d '{"model": "gpt-4", "prompt": "say hi", "userId": "nfClq5PitgsxY5ho7wNq"}'
 
 
+ curl -X POST http://localhost:80/api/service/gemini \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" \
+-d '{"model": "gemini-1.0-pro-002", "prompt": "say hi", "userId": "nfClq5PitgsxY5ho7wNq"}'
 
-curl -X POST  -H "Content-Type: application/json" -d '{"model": "gemini-1.0-pro-002", "prompt": "say hi"}'  -H "Authorization: Bearer VZ6333jTvi6JvDzv1eFogPPT3BlbkFwordQWYtJbk7K269asdQPO" localhost:80/api/service/gemini
 
 curl -X POST http://localhost/api/service/claude \
 -H "Content-Type: application/json" \
